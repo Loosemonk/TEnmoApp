@@ -1,6 +1,12 @@
 package com.techelevator.tenmo;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.client.RestTemplate;
+
 import com.techelevator.tenmo.models.AuthenticatedUser;
+import com.techelevator.tenmo.models.User;
 import com.techelevator.tenmo.models.UserCredentials;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.AuthenticationServiceException;
@@ -8,6 +14,7 @@ import com.techelevator.view.ConsoleService;
 
 public class App {
 
+	
 private static final String API_BASE_URL = "http://localhost:8080/";
     
     private static final String MENU_OPTION_EXIT = "Exit";
@@ -21,7 +28,10 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	private static final String MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS = "View your pending requests";
 	private static final String MAIN_MENU_OPTION_LOGIN = "Login as different user";
 	private static final String[] MAIN_MENU_OPTIONS = { MAIN_MENU_OPTION_VIEW_BALANCE, MAIN_MENU_OPTION_SEND_BUCKS, MAIN_MENU_OPTION_VIEW_PAST_TRANSFERS, MAIN_MENU_OPTION_REQUEST_BUCKS, MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS, MAIN_MENU_OPTION_LOGIN, MENU_OPTION_EXIT };
+
+	private static final String AUTH_TOKEN = "";
 	
+	public RestTemplate restTemplate = new RestTemplate();
     private AuthenticatedUser currentUser;
     private ConsoleService console;
     private AuthenticationService authenticationService;
@@ -68,8 +78,9 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void viewCurrentBalance() {
-		// TODO Auto-generated method stub
-		
+		double  userBalance= 0;
+		userBalance = restTemplate.exchange(API_BASE_URL +"accounts", HttpMethod.GET, makeAuthEntity(), double.class).getBody();
+		System.out.println(userBalance);
 	}
 
 	private void viewTransferHistory() {
@@ -151,4 +162,10 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		String password = console.getUserInput("Password");
 		return new UserCredentials(username, password);
 	}
+	   private HttpEntity makeAuthEntity() {
+	        HttpHeaders headers = new HttpHeaders();
+	        headers.setBearerAuth(AUTH_TOKEN);
+	        HttpEntity entity = new HttpEntity<>(headers);
+	        return entity;
+	    }
 }

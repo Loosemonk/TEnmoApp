@@ -11,6 +11,8 @@ public interface UserDAO {
     User findByUsername(String username);
 
     int findIdByUsername(String username);
+    
+    public double viewCurrentBalance(String username); 
 
     boolean create(String username, String password);
 }
