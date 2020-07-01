@@ -7,11 +7,12 @@ import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.User;
 
-@Component
+@Service
 public class AccountSqlDAO implements AccountDAO {
 
 	
@@ -20,39 +21,26 @@ public class AccountSqlDAO implements AccountDAO {
 	public AccountSqlDAO(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 	}
+	
 	@Override
-	   public BigDecimal getBalance(String username) {
-	    	return jdbcTemplate.queryForObject("SELECT balance FROM accounts "
-	    			+ "JOIN users ON users.user_id = accounts.user_id "
-	    			+ "WHERE users.user_id = ?;", BigDecimal.class, username);  
-
-	    }
-@Override
-public List<Account> findAll(){
-	List<Account> accounts = new ArrayList<>();
-	String sql ="SELECT * FROM accounts";
-	
-	SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
-	while(results.next()) {
-		Account account = mapRowToAccount(results);
-		accounts.add(account);
+	public Account getAccountByUserId(Long userId) {
+		Account account = null;
+		String sql = "SELECT account_id, user_id, balance FROM accounts WHERE user_id = ?";
+		
+		SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
+		while(results.next()) {
+			account = mapRowToAccount(results);
 		}
-	return accounts;
+	return account;
+	}
+	@Override
+	public void updateBalance(Account account) {
+		String sql = "UPDATE accounts SET balance = ? WHERE account_id = ?";
+		jdbcTemplate.update(sql, account.getBalance(), account.getAccountId());
+	}
+private Account mapRowToAccount(SqlRowSet rs) {
+	return new Account(rs.getLong("account_id"), rs.getLong("user_id"), rs.getBigDecimal("balance"));
 }
-	
-private Account mapRowToAccount(SqlRowSet result) {
-	{
-        Account account = new Account();
-        account.setId(result.getInt("account_id"));
-        account.setUser_id(result.getInt("user_id"));
-        account.setBalance(result.getBigDecimal("balance"));
-     
-        return account;
-    }
-
-
-}
-
 	
 
 

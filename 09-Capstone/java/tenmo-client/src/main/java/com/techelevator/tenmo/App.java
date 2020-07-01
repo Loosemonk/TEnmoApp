@@ -1,5 +1,7 @@
 package com.techelevator.tenmo;
 
+import java.math.BigDecimal;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -8,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 import com.techelevator.tenmo.models.AuthenticatedUser;
 import com.techelevator.tenmo.models.User;
 import com.techelevator.tenmo.models.UserCredentials;
+import com.techelevator.tenmo.services.AccountService;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.AuthenticationServiceException;
 import com.techelevator.view.ConsoleService;
@@ -35,16 +38,21 @@ private static final String API_BASE_URL = "http://localhost:8080/";
     private AuthenticatedUser currentUser;
     private ConsoleService console;
     private AuthenticationService authenticationService;
-
+    private AccountService accountService;
+    
+    
     public static void main(String[] args) {
-    	App app = new App(new ConsoleService(System.in, System.out), new AuthenticationService(API_BASE_URL));
+    	App app = new App(new ConsoleService(System.in, System.out),
+    			new AuthenticationService(API_BASE_URL),
+    			new AccountService(API_BASE_URL));
     	app.run();
     }
 
-    public App(ConsoleService console, AuthenticationService authenticationService) {
+    public App(ConsoleService console, AuthenticationService authenticationService, AccountService accountService) {
 		this.console = console;
 		this.authenticationService = authenticationService;
-	}
+		this.accountService = accountService;
+    }
 
 	public void run() {
 		System.out.println("*********************");
@@ -59,6 +67,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		while(true) {
 			String choice = (String)console.getChoiceFromOptions(MAIN_MENU_OPTIONS);
 			if(MAIN_MENU_OPTION_VIEW_BALANCE.equals(choice)) {
+				
 				viewCurrentBalance();
 			} else if(MAIN_MENU_OPTION_VIEW_PAST_TRANSFERS.equals(choice)) {
 				viewTransferHistory();
@@ -78,10 +87,12 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void viewCurrentBalance() {
-		double  userBalance= 0;
-		userBalance = restTemplate.exchange(API_BASE_URL +"accounts", HttpMethod.GET, makeAuthEntity(), double.class).getBody();
-		System.out.println(userBalance);
+		BigDecimal balance = accountService.getBalance(currentUser.getToken());
+		System.out.println("Your current account balance is: " + balance);
+		
+		
 	}
+
 
 	private void viewTransferHistory() {
 		// TODO Auto-generated method stub
@@ -162,10 +173,12 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		String password = console.getUserInput("Password");
 		return new UserCredentials(username, password);
 	}
-	   private HttpEntity makeAuthEntity() {
+	/*  
+	private HttpEntity makeAuthEntity() {
 	        HttpHeaders headers = new HttpHeaders();
 	        headers.setBearerAuth(AUTH_TOKEN);
 	        HttpEntity entity = new HttpEntity<>(headers);
 	        return entity;
 	    }
+*/
 }
