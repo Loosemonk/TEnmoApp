@@ -33,20 +33,13 @@ public class AccountController {
 		this.userDAO = userDAO;
 	}
 
-	/*
-	@RequestMapping(path = "accounts", method = RequestMethod.GET)
-	public List<Account> findAll() {
-		return accountDAO.findAll();
-	*/
-	
-
 	@RequestMapping(value = "/balance", method = RequestMethod.GET)
 	public BigDecimal getBalance(Principal principal) throws UsernameNotFoundException {
 		Long userId = getCurrentUserId(principal);
 		return accountDAO.getAccountByUserId(userId).getBalance();
 	}
 
-	private Long getCurrentUserId(Principal principal) {
+	public Long getCurrentUserId(Principal principal) {
 		return userDAO.findByUsername(principal.getName()).getId();
 
 	}
